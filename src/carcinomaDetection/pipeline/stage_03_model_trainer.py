@@ -1,5 +1,5 @@
 from carcinomaDetection.config.configuration import ConfigurationManager
-from src.carcinomaDetection.components.model_trainer import Training
+from carcinomaDetection.components.model_trainer import Training
 from carcinomaDetection import logger
 
 

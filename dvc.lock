@@ -1,0 +1,118 @@
+schema: '2.0'
+stages:
+  data_ingestion:
+    cmd: python src/carcinomaDetection/pipeline/stage_01_data_ingestion.py
+    deps:
+    - path: config/config.yaml
+      hash: md5
+      md5: 309c9bb9cd4bfe8c99a018de678acd5e
+      size: 714
+    - path: src/carcinomaDetection/pipeline/stage_01_data_ingestion.py
+      hash: md5
+      md5: 3334c61a830fd8226b0d40430602fa8d
+      size: 887
+    outs:
+    - path: artifacts/data_ingestion/Data
+      hash: md5
+      md5: c82698860340ed9f0dd534abb0e937d4.dir
+      size: 124971142
+      nfiles: 1002
+  prepare_base_model:
+    cmd: python src/carcinomaDetection/pipeline/stage_02_prepare_base_model.py
+    deps:
+    - path: config/config.yaml
+      hash: md5
+      md5: 309c9bb9cd4bfe8c99a018de678acd5e
+      size: 714
+    - path: src/carcinomaDetection/pipeline/stage_02_prepare_base_model.py
+      hash: md5
+      md5: f146d89ee05043723865d36f868a48b6
+      size: 931
+    params:
+      params.yaml:
+        CLASSES: 4
+        IMAGE_SIZE:
+        - 224
+        - 224
+        - 3
+        INCLUDE_TOP: false
+        LEARNING_RATE: 0.001
+        WEIGHTS: imagenet
+    outs:
+    - path: artifacts/prepare_base_model
+      hash: md5
+      md5: 83cc1d615ed27a0be7e37cd6506a9485.dir
+      size: 118255264
+      nfiles: 2
+  training:
+    cmd: python src/carcinomaDetection/pipeline/stage_03_model_trainer.py
+    deps:
+    - path: artifacts/data_ingestion/Data/train
+      hash: md5
+      md5: cd647f9a118443706e65a93e83d35701.dir
+      size: 72490558
+      nfiles: 614
+    - path: artifacts/data_ingestion/Data/valid
+      hash: md5
+      md5: 5291c14d685da698cd653d49c8f5c7ef.dir
+      size: 9187861
+      nfiles: 72
+    - path: artifacts/prepare_base_model
+      hash: md5
+      md5: 83cc1d615ed27a0be7e37cd6506a9485.dir
+      size: 118255264
+      nfiles: 2
+    - path: config/config.yaml
+      hash: md5
+      md5: 309c9bb9cd4bfe8c99a018de678acd5e
+      size: 714
+    - path: src/carcinomaDetection/pipeline/stage_03_model_trainer.py
+      hash: md5
+      md5: 2945860ec6313ad168c615c4b6cf9aee
+      size: 857
+    params:
+      params.yaml:
+        AUGMENTATION: true
+        BATCH_SIZE: 16
+        EPOCHS: 3
+        IMAGE_SIZE:
+        - 224
+        - 224
+        - 3
+    outs:
+    - path: artifacts/training/model.h5
+      hash: md5
+      md5: 52cf764da39a3246cf5fe4c8e48034df
+      size: 59738928
+  evaluation:
+    cmd: python src/carcinomaDetection/pipeline/stage_04_model_evaluation.py
+    deps:
+    - path: artifacts/data_ingestion/Data/test
+      hash: md5
+      md5: e0a2c120e6f96a38d0407e5cde8d5b8b.dir
+      size: 43286575
+      nfiles: 315
+    - path: artifacts/training/model.h5
+      hash: md5
+      md5: 52cf764da39a3246cf5fe4c8e48034df
+      size: 59738928
+    - path: config/config.yaml
+      hash: md5
+      md5: 309c9bb9cd4bfe8c99a018de678acd5e
+      size: 714
+    - path: src/carcinomaDetection/pipeline/stage_04_model_evaluation.py
+      hash: md5
+      md5: 7e2957d3cec193f170ef89735e8e79c5
+      size: 897
+    params:
+      params.yaml:
+        BATCH_SIZE: 16
+        IMAGE_SIZE:
+        - 224
+        - 224
+        - 3
+    outs:
+    - path: scores.json
+      hash: md5
+      md5: 8a3c81f53fcc87c4152b95bc723be0a4
+      size: 69
